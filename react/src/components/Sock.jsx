@@ -2,7 +2,11 @@ import React from 'react';
 
 const Sock = (props) => {
     return (
-        <div className='card'>
+        <div className='card' style = {{
+            flex: '1',
+            minWidth: '300px',
+            maxWidth: '45%'
+        }}>
             <div className='card-body'>
                 <h5 className='card-title'>Sock Details</h5>
                 <div className='card-text'>Size: {props.data.sockDetails.size}</div>
@@ -19,7 +23,7 @@ const Sock = (props) => {
                 <div className="card-text">Anti Bacterial: {props.data.additionalFeatures.antiBacterial ? "Yes" : "No"}</div>
             </div>
             <div className='card-footer'>
-                <small className='text-muted'>Added: </small>
+                <small className='text-muted'>Added: {props.data.addedTimestamp}</small>
             </div>
         </div>
     )
