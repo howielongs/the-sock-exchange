@@ -4,8 +4,44 @@ import Footer from "./components/Footer";
 import Search from "./components/Search";
 import promo_data from './assets/promo.json';
 import Promo from './components/Promo';
+import React, { useState, useEffect } from "react";
 
 function App() {
+  const [data, setData] = useState([]);
+  const apiURL = import.meta.env.VITE_SOCKS_API_URL //different from lab, more intuitive for me
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(apiURL);
+        if (!response.ok) {
+          throw new Error('Data could not be fetched.');
+        }
+        const json_response = await response.json();
+        setData(json_response); //assign json response to the data variable
+      } catch (error) {
+        console.error('Error fetching socks: ', error);
+      }
+    };
+    fetchData()
+  }, []);
+
+  const handleDelete = async (sockId) => {
+    try {
+      // Make an API request to delete the sock with the given sockId
+      const response = await fetch(`${import.meta.env.VITE_SOCKS_API_URL}/${sockId}`, {
+        method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Sock could not be deleted!');
+        }
+        // Update the state or fetch the updated data from the server
+        const updatedData = data.filter(sock => sock._id !== sockId); // Remove the deleted sock from the data array
+        setData(updatedData); // Update the state with the updated data
+        } catch (error) {
+          console.error('Error deleting sock:', error);
+        }
+  };
   return (
     <>
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -51,7 +87,7 @@ function App() {
                 <a className="nav-link disabled" aria-disabled="true">Disabled</a>
               </li>
             </ul>
-            <Search/>
+            <Search setData={setData}/>
           </div>
         </div>
       </nav>
@@ -60,25 +96,28 @@ function App() {
         <div className="container-fluid">
           <div className="row">
             <p>Both socks and space rockets 🚀 will take you to new heights, but only one will get cold feet!</p>
-            <h5>Featured</h5>
-            <div className="card-container d-flex flex-row justify-content-start" style = {{
-              gap: "20px",
-              padding: "20px"
-            }}>
-              {
-                promo_data.map((promo) => (
-                  <Promo key={promo.id} data={promo}/>
-                ))
-              }
+    
+            <div className="container my-4">
+              <h5 className="mb-3">Featured</h5>
+              <div
+                className="d-flex flex-wrap justify-content-start align-items-stretch"
+                style={{ gap: "20px" }}
+              >
+                {promo_data.map((promo) => (
+                  <Promo key={promo.id} data={promo} />
+                ))}
+              </div>
             </div>
+
+            
             <div className="card-container" style ={{
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '20px'
               }}>
               {
-                sock_data.map((sock) => (
-                  <Sock key = {sock.id} data = {sock} />
+                data.map((sock) => (
+                  <Sock key = {sock._id} data = {sock} handleDelete={handleDelete} /> //_id is the key in the API response
                 ))
               }
             </div>
