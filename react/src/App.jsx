@@ -2,9 +2,18 @@ import Sock from "./components/Sock";
 import sock_data from './assets/sock.json';
 import Footer from "./components/Footer";
 import Search from "./components/Search";
-import promo_data from './assets/promo.json';
-import Promo from './components/Promo';
 import React, { useState, useEffect } from "react";
+import Home from './components/Home';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Link
+} from "react-router-dom";
+import About from './components/About';
+import Featured from "./components/Featured";
+import AddSock from "./components/AddSock";
+
 
 function App() {
   const [data, setData] = useState([]);
@@ -42,6 +51,17 @@ function App() {
           console.error('Error deleting sock:', error);
         }
   };
+
+  const handleAdd = async () => {
+    try {
+      const res = await fetch(import.meta.env.VITE_SOCKS_API_URL);
+      const updated = await res.json();
+      setData(updated); // Fetch fresh list to ensure complete data
+    } catch (err) {
+      console.error("Failed to refresh socks after add:", err);
+    }
+  };
+  
   return (
     <>
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -61,11 +81,21 @@ function App() {
           <div className="collapse navbar-collapse" id="navbarSupportedContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="#">Home</a>
+                <Link className="nav-link" to="/">
+                Home
+                </Link>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Link</a>
+                <Link className="nav-link" to="/about">
+                About
+                </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/add">
+                  Add Sock
+                </Link>
+              </li>
+              
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
@@ -91,36 +121,20 @@ function App() {
           </div>
         </div>
       </nav>
-
       <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-md-4">
         <div className="container-fluid">
           <div className="row">
             <p>Both socks and space rockets 🚀 will take you to new heights, but only one will get cold feet!</p>
-    
-            <div className="container my-4">
-              <h5 className="mb-3">Featured</h5>
-              <div
-                className="d-flex flex-wrap justify-content-start align-items-stretch"
-                style={{ gap: "20px" }}
-              >
-                {promo_data.map((promo) => (
-                  <Promo key={promo.id} data={promo} />
-                ))}
-              </div>
-            </div>
-
+            <Featured />
             
-            <div className="card-container" style ={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '20px'
-              }}>
-              {
-                data.map((sock) => (
-                  <Sock key = {sock._id} data = {sock} handleDelete={handleDelete} /> //_id is the key in the API response
-                ))
-              }
-            </div>
+
+            {/* Dynamic route rendering here */}
+            <Routes>
+              <Route path="/" element={<Home data={data} handleDelete={handleDelete} setData={setData} />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/add" element={<AddSock onAdd={handleAdd} />} />
+            </Routes>
+
             <div className="text-muted">
               <Footer environment={"Development:"}/>
             </div>
