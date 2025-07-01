@@ -2,6 +2,8 @@ import Sock from "./components/Sock";
 import sock_data from './assets/sock.json';
 import Footer from "./components/Footer";
 import Search from "./components/Search";
+import Filters from './components/Filters'; // new dropdown component
+
 import React, { useState, useEffect } from "react";
 import Home from './components/Home';
 import {
@@ -14,11 +16,20 @@ import About from './components/About';
 import Featured from "./components/Featured";
 import AddSock from "./components/AddSock";
 
+import { AuthProvider } from './hooks/AuthContext';
+import RequireAuth from './components/RequireAuth';
+
+import LoginForm from "./components/LoginForm";
+
 
 function App() {
   const [data, setData] = useState([]);
   const apiURL = import.meta.env.VITE_SOCKS_API_URL //different from lab, more intuitive for me
-
+  const [filters, setFilters] = useState({
+    size: '',
+    condition: '',
+    material: ''
+  });
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -61,6 +72,15 @@ function App() {
       console.error("Failed to refresh socks after add:", err);
     }
   };
+
+  const filteredData = data.filter(sock => {
+    const { size, condition, material } = filters;
+    const details = sock.sockDetails || {};
+    return (!size || details.size === size) &&
+           (!condition || details.condition === condition) &&
+           (!material || details.material === material);
+  });
+  
   
   return (
     <>
@@ -95,7 +115,11 @@ function App() {
                   Add Sock
                 </Link>
               </li>
-              
+              <li className="nav-item">
+                <Link className="nav-link" to="/login">
+                  Log In
+                </Link>
+              </li>
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle"
@@ -127,14 +151,30 @@ function App() {
             <p>Both socks and space rockets 🚀 will take you to new heights, but only one will get cold feet!</p>
             <Featured />
             
-
+          <AuthProvider>
             {/* Dynamic route rendering here */}
             <Routes>
-              <Route path="/" element={<Home data={data} handleDelete={handleDelete} setData={setData} />} />
+              
+            <Route
+              path="/"
+              element={
+                <>
+                  <Filters filters={filters} setFilters={setFilters} data={data} />
+                  <Home data={filteredData} handleDelete={handleDelete} setData={setData} />
+                </>
+              }
+            />
               <Route path="/about" element={<About />} />
-              <Route path="/add" element={<AddSock onAdd={handleAdd} />} />
+              <Route path="/add"
+               element = {
+                  <RequireAuth>
+                  <AddSock onAdd={handleAdd} />
+                  </RequireAuth>
+                }
+              />
+              <Route path = "/login" element = {<LoginForm/>} />
             </Routes>
-
+          </AuthProvider>
             <div className="text-muted">
               <Footer environment={"Development:"}/>
             </div>

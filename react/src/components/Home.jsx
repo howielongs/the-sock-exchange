@@ -8,7 +8,7 @@ const Home = ({ data, handleDelete, setData }) => {
   }
   return (
     <>
-
+     <h4 className='mt-5 mb-4'>Sock Listings</h4>
     <div className="card-container d-flex flex-wrap gap-3">
       {data.map(sock => (
         <Sock key={sock._id} data={sock} handleDelete={handleDelete} />
